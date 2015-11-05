@@ -1,6 +1,9 @@
 *.swp
 *.html
+*.pyc
 
 **/data/
-
 **/cookies.txt
+**/*debuglog.txt
+
+scripts/python/credentials.py
