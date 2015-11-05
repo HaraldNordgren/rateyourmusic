@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
 
-import sys, os
-import argparse, urllib2, urlparse
-
+import sys, os, argparse, urllib2, urlparse, re
 from bs4 import BeautifulSoup
 
 soup = None
@@ -43,11 +41,31 @@ def parse_command_line_args():
         parser.print_help()
         parser.exit(1)
 
+def extract_title_and_artist(string):
+    m = re.match('(.*), by (.*)', string)
+
+    if not m:
+        raise Exception('Regex did not match')
+
+    title = m.group(1)
+    artist = m.group(2)
+
+    return (title, artist)
+
 def parse_tracklist():
+
+    title_and_artist = soup.find('meta', attrs={'name':'title'})['content']
+    (album_title, artist_name) = extract_title_and_artist(title_and_artist)
+    
+    print "Album title:\t%s" % album_title
+    print "Artist:\t\t%s" % artist_name
+    print
+
 
     tracknumber_cols = soup.findAll('td', attrs={'class':'track-number-col'})
     title_cols       = soup.findAll('td', attrs={'class':'title-col'})
 
+    print "Tracklist:"
     for (track_col, title_col) in zip(tracknumber_cols, title_cols):
         track_id = track_col.div.string.replace(".","")
 
@@ -58,6 +76,9 @@ def parse_tracklist():
         track_duration = track_duration_span.string.strip()
     
         print '%s|%s|%s' % (track_id, track_title, track_duration)
+
+    release_date = soup.find('meta', attrs={'itemprop':'datePublished'})['content']
+    print "\nRelease date: %s" % release_date
 
 
 reload(sys)

@@ -2,3 +2,5 @@
 *.html
 
 **/data/
+
+**/cookies.txt
