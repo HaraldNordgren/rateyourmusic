@@ -32,28 +32,30 @@ def parse_command_line_args():
     global soup, config_file, args, album_dir
     
     parser = argparse.ArgumentParser(description='Get a RYM tracklist from Bandcamp')
-    parser.add_argument('-u', '--url')
-    #parser.add_argument('--add-artist', action='store_true')
+    
+    parser.add_argument('-u', '--url', required = True)
+    parser.add_argument('--add-artist', action='store_true')
     parser.add_argument('-r', '--rym-profile')
+
     args = parser.parse_args()
 
-    if args.url is not None:
-        if not bandcamp_url(args.url):
-            print "Not a Bandcamp url"
-            parser.exit(1)
-        
-        req             = urllib2.urlopen(args.url)
-        content         = req.read()
-        soup            = BeautifulSoup(content, 'html.parser')
-        
-        album_dir       = 'data/' + os.path.basename(args.url)
-        create_if_needed(album_dir)
-
-        config_file     = album_dir + '/album_data.ini'
-
-    else:
-        parser.print_help()
+    if not bandcamp_url(args.url):
+        print "Not a Bandcamp url"
         parser.exit(1)
+    
+    if not args.add_artist and args.rym_profile is None:
+        print "Either set --add-artist or provide an RYM profile!"
+        parser.exit(1)
+    
+    req             = urllib2.urlopen(args.url)
+    content         = req.read()
+    soup            = BeautifulSoup(content, 'html.parser')
+    
+    album_dir       = 'data/' + os.path.basename(args.url)
+    create_if_needed(album_dir)
+
+    config_file     = album_dir + '/album_data.ini'
+
 
 def extract_title_and_artist(string):
     m = re.match('(.*), by (.*)', string)

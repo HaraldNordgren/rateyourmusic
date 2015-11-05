@@ -27,8 +27,22 @@ def add_album_to_rym(args, config_file):
     time.sleep(5)
 
     (title, artist, tracklist, release, cover) = config.read_config(config_file)
+   
+    if args.add_artist:
+        br.visit('https://rateyourmusic.com/artist_add')
+
+        br.fill('lastname', unicode(artist))
+        br.fill('comments', args.url)
+
+        br.find_by_id('submitbtn').click()
+
+        time.sleep(3)
+        
+        br.find_by_text(artist).click()
     
-    br.visit(args.rym_profile)
+    else:
+        br.visit(args.rym_profile)
+    
     time.sleep(3)
 
     br.click_link_by_partial_href('/releases/ac?artist_id=')
