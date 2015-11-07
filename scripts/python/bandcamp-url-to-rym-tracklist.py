@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import sys, os, re, argparse, urllib
-import rym, config
+import sys, os, re, argparse, urllib, splinter, time
+import rym, config, credentials
+#from splinter import Browser
 from bs4 import BeautifulSoup
 
 #reload(sys)
@@ -11,6 +12,13 @@ soup        = None
 cfg_file    = None
 args        = None
 album_dir   = None
+
+subparser_string    = 'subparser'
+add_artist          = 'add-artist'
+add_album           = 'add-album'
+update_album        = 'update-album'
+info                = 'info'
+cover               = 'cover'
 
 def create_if_needed(directory):
     try:
@@ -29,27 +37,39 @@ def bandcamp_url(url):
     two_level_domain = "%s.%s" % (domain_components[-2], domain_components[-1])
     return two_level_domain == "bandcamp.com"
 
+
 def parse_command_line_args():
     
     global soup, config_file, args, album_dir
-    
+
+
     parser = argparse.ArgumentParser(description='Get a RYM tracklist from Bandcamp')
-    
+
     parser.add_argument('-u', '--url', required=True, help='Bandcamp URL')
 
-    artist_group = parser.add_mutually_exclusive_group(required=True)
-    artist_group.add_argument('--add-artist', action='store_true', help='Add artist to database also')
-    artist_group.add_argument('-r', '--rym-profile', help='RateYourMusic artis profile URL')
+    subparsers = parser.add_subparsers(dest=subparser_string)
 
-    #parser.add_argument('--update-album', nargs='+', type=str, choices=['hej', 'nej'])
-    #parser.add_argument('-a', '--rym-album')
+    add_artist_subparser = subparsers.add_parser(add_artist, help='Add new artist to RYM')
+
+    add_album_subparser = subparsers.add_parser(add_album, help='Add album to RYM aritst page')
+    add_album_subparser.add_argument('-r', '--rym-profile', help='RateYourMusic artist profile URL')
+    
+    update_subparser = subparsers.add_parser(update_album, help='Update RYM album with Bandcamp info')
+    update_subparser.add_argument('-a', '--rym-album', required=True)
+    update_subparser.add_argument('--update', nargs='+', type=str, choices=[info, cover])
 
     args = parser.parse_args()
+    #print(args.update)
+    #sys.exit(0)
+
+    #print(getattr(args, subparser_string))
+    #sys.exit(0)
 
     if not bandcamp_url(args.url):
         print("Not a Bandcamp url")
         parser.exit(1)
 
+    #print(cover in args.update)
     #sys.exit(0)
 
     """
@@ -114,13 +134,163 @@ def parse_tracklist():
     cover_art = soup.find('link', attrs={'rel':'image_src'})['href']
     image_ext = os.path.splitext(cover_art)[1]
     cover_art_file  = album_dir + '/cover_art' + image_ext
+    #cover_art_file  = cover_art_file.replace('%', "")
+    
     urllib.request.urlretrieve(cover_art, cover_art_file)
 
     config.write_config(config_file, title, artist, full_tracklist, 
             release, os.path.abspath(cover_art_file))
 
 
+def parse_release_date(release):
+    year    = release[0:4]
+    month   = release[4:6]
+    day     = release[6:8]
+
+    return (year, month, day)
+
+
+def get_attribute(obj, string):
+    return getattr(obj, string)
+
+
+def login(br):
+    
+    br.visit('https://rateyourmusic.com/account/login')
+    time.sleep(3)
+    
+    br.fill('username', credentials.username)
+    br.fill('password', credentials.password)
+    br.find_by_id('login_submit').click()
+    
+    time.sleep(5)
+
+
+def submit_info(br, title, tracklist, release):
+    br.fill('title', title)
+    
+    br.find_by_id('format58').click()
+
+    br.find_by_id('goAdvancedBtn').click()
+    tracks_div = br.find_by_id('tracks_adv')
+    tracks_text_area = tracks_div.find_by_id('track_advanced')
+    tracks_text_area.fill(tracklist) 
+    br.find_by_id('goSimpleBtn').click()
+
+    br.fill('notes', args.url)
+ 
+    (year, month, day)      = parse_release_date(release)
+
+    release_month_selector  = br.find_by_id('month')
+    release_month_selector.select(month)
+    
+    release_day_selector    = br.find_by_id('day')
+    release_day_selector.select(day)
+
+    if int(year) < 2020:
+        release_year_selector   = br.find_by_id('year')
+        release_year_selector.select(year)
+    
+    br.find_by_id('previewbtn').click()
+    br.find_by_id('submitbtn').click()
+
+
+def upload_cover(br, cover_art_file, source):
+
+    """
+    coverart_img_element = br.find_by_xpath("//img[@class='coverart_img']")
+    print(coverart_im_element)
+    sys.exit(0)
+    """
+
+    br.attach_file('upload_file', cover_art_file)
+
+    br.fill('source', source)
+    br.find_by_id('uploadbutton').click()
+    time.sleep(10)
+
+    br.click_link_by_partial_href('javascript:setStatus')
+    br.click_link_by_partial_href('/release/')
+
+
+def add_album_to_rym(args, config_file):
+    (title, artist, tracklist, release, cover_art_file) = config.read_config(config_file)
+    
+    br = splinter.Browser()
+    login(br)
+
+    if get_attribute(args, subparser_string) == update_album:
+        
+        br.visit(args.rym_album)
+        time.sleep(2)
+
+        #artist_page = br.find_by_xpath("//a[@itemprop='name']")
+         
+        if info in args.update:
+
+            br.find_by_text('Correct this entry').click()    
+            submit_info(br, title, tracklist, release)
+            time.sleep(2)
+            
+            br.visit(args.rym_album)
+            time.sleep(2)
+
+        if cover in args.update:
+            
+            br.find_by_text('Upload cover art').click()
+            
+            upload_cover(br, cover_art_file, args.url)
+            time.sleep(2)
+            
+            br.visit(args.rym_album)
+            time.sleep(2)
+
+        #artist_page.click()
+
+    else:
+
+        if get_attribute(args, subparser_string) == add_artist:
+            br.visit('https://rateyourmusic.com/artist_add')
+
+            br.fill('lastname', artist)
+            br.fill('comments', args.url)
+
+            br.find_by_id('submitbtn').click()
+
+            time.sleep(3)
+            
+            br.find_by_text(artist).click()
+        
+        else:
+            br.visit(args.rym_profile)
+        
+        time.sleep(3)
+
+        br.click_link_by_partial_href('/releases/ac?artist_id=')
+        submit_info(br, title, tracklist, release)
+        
+        br.click_link_by_partial_href('/images/upload?type=l&assoc_id=')
+        upload_cover(br, cover_art_file, args.url)
+
+    # Vote for genre
+    time.sleep(3)
+
+    br.click_link_by_partial_href('/rgenre/set?')
+
+    prigen_text_area = br.find_by_xpath("//input[@id='prigen']")
+    prigen_text_area.fill('vaporwave')
+
+    prigen_vote_button = br.find_by_xpath("//input[@value='+ propose']").first
+    prigen_vote_button.click()
+
+    # Done
+    br.click_link_by_partial_href('/release/')
+    print("Finished")
+
+
+
+
 parse_command_line_args()
 parse_tracklist()
 
-rym.add_album_to_rym(args, config_file)
+add_album_to_rym(args, config_file)
