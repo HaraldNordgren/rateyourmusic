@@ -1,9 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
-import sys, os, re, argparse, urllib, urllib2, urlparse
+import sys, os, re, argparse, urllib
 import rym, config
-
 from bs4 import BeautifulSoup
+
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 
 soup        = None
 cfg_file    = None
@@ -17,7 +19,7 @@ def create_if_needed(directory):
         pass
 
 def bandcamp_url(url):
-    parsed_uri = urlparse.urlparse(url)
+    parsed_uri = urllib.parse.urlparse(url)
     domain = parsed_uri.netloc
 
     domain_components = domain.split('.')
@@ -33,21 +35,30 @@ def parse_command_line_args():
     
     parser = argparse.ArgumentParser(description='Get a RYM tracklist from Bandcamp')
     
-    parser.add_argument('-u', '--url', required = True)
-    parser.add_argument('--add-artist', action='store_true')
-    parser.add_argument('-r', '--rym-profile')
+    parser.add_argument('-u', '--url', required=True, help='Bandcamp URL')
+
+    artist_group = parser.add_mutually_exclusive_group(required=True)
+    artist_group.add_argument('--add-artist', action='store_true', help='Add artist to database also')
+    artist_group.add_argument('-r', '--rym-profile', help='RateYourMusic artis profile URL')
+
+    #parser.add_argument('--update-album', nargs='+', type=str, choices=['hej', 'nej'])
+    #parser.add_argument('-a', '--rym-album')
 
     args = parser.parse_args()
 
     if not bandcamp_url(args.url):
-        print "Not a Bandcamp url"
+        print("Not a Bandcamp url")
         parser.exit(1)
-    
-    if not args.add_artist and args.rym_profile is None:
-        print "Either set --add-artist or provide an RYM profile!"
-        parser.exit(1)
-    
-    req             = urllib2.urlopen(args.url)
+
+    #sys.exit(0)
+
+    """
+    if args.update_album and args.rym_album is None:
+        print("Provide album to be updated!")
+        parse.exit(1)
+    """
+
+    req             = urllib.request.urlopen(args.url)
     content         = req.read()
     soup            = BeautifulSoup(content, 'html.parser')
     
@@ -74,8 +85,8 @@ def parse_tracklist():
     
     (title, artist) = extract_title_and_artist(title_and_artist)
     
-    print "Album title:\t%s" % title
-    print "Artist:\t\t%s" % artist
+    print("Album title:\t%s" % title)
+    print("Artist:\t\t%s" % artist)
     print
 
     tracknumber_cols = soup.findAll('td', attrs={'class':'track-number-col'})
@@ -83,7 +94,7 @@ def parse_tracklist():
 
     full_tracklist = ""
 
-    print "Tracklist:"
+    print("Tracklist:")
     for (track_col, title_col) in zip(tracknumber_cols, title_cols):
         track_id = track_col.div.string.replace(".","")
 
@@ -94,23 +105,20 @@ def parse_tracklist():
         track_duration = track_duration_span.string.strip()
     
         tracklist_string = '%s|%s|%s' % (track_id, track_title, track_duration)
-        print tracklist_string
+        print(tracklist_string)
         full_tracklist += tracklist_string + "\n"
 
     release = soup.find('meta', attrs={'itemprop':'datePublished'})['content']
-    print "\nRelease date: %s" % release
+    print("\nRelease date: %s" % release)
 
     cover_art = soup.find('link', attrs={'rel':'image_src'})['href']
     image_ext = os.path.splitext(cover_art)[1]
     cover_art_file  = album_dir + '/cover_art' + image_ext
-    urllib.urlretrieve(cover_art, cover_art_file)
+    urllib.request.urlretrieve(cover_art, cover_art_file)
 
     config.write_config(config_file, title, artist, full_tracklist, 
             release, os.path.abspath(cover_art_file))
 
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 parse_command_line_args()
 parse_tracklist()

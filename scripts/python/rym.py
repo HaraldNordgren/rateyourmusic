@@ -1,11 +1,10 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import sys, config, time, credentials
+import sys, config, time, importlib, credentials
 from splinter import Browser
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+#importlib.reload(sys)
+#sys.setdefaultencoding('utf-8')
 
 def parse_release_date(release):
     year    = release[0:4]
@@ -28,10 +27,20 @@ def add_album_to_rym(args, config_file):
 
     (title, artist, tracklist, release, cover) = config.read_config(config_file)
    
+
+    """
+    if args.update_album:
+
+        br.visit(args.rym_album)
+
+    else:
+    """
+
     if args.add_artist:
         br.visit('https://rateyourmusic.com/artist_add')
 
-        br.fill('lastname', unicode(artist))
+        #br.fill('lastname', unicode(artist))
+        br.fill('lastname', artist)
         br.fill('comments', args.url)
 
         br.find_by_id('submitbtn').click()
@@ -44,18 +53,20 @@ def add_album_to_rym(args, config_file):
         br.visit(args.rym_profile)
     
     time.sleep(3)
-
+    
     br.click_link_by_partial_href('/releases/ac?artist_id=')
     
     # Add data
-    br.fill('title', unicode(title))
+    #br.fill('title', unicode(title))
+    br.fill('title', title)
     
     br.find_by_id('format58').click()
 
     br.find_by_id('goAdvancedBtn').click()
     tracks_div = br.find_by_id('tracks_adv')
     tracks_text_area = tracks_div.find_by_id('track_advanced')
-    tracks_text_area.fill(unicode(tracklist)) 
+    #tracks_text_area.fill(unicode(tracklist)) 
+    tracks_text_area.fill(tracklist) 
     br.find_by_id('goSimpleBtn').click()
 
     br.fill('notes', args.url)
@@ -75,7 +86,13 @@ def add_album_to_rym(args, config_file):
     br.find_by_id('submitbtn').click()
 
     # Add cover art
-    #br.visit('https://rateyourmusic.com/success?type=l&assoc_id=6888925&new=1&autoapproved=1')
+
+    """
+    coverart_img_element = br.find_by_xpath("//img[@class='coverart_img']")
+    print(coverart_im_element)
+    sys.exit(0)
+    """
+
     br.click_link_by_partial_href('/images/upload?type=l&assoc_id=')
     br.attach_file('upload_file', cover)
 
@@ -83,7 +100,6 @@ def add_album_to_rym(args, config_file):
     br.find_by_id('uploadbutton').click()
     time.sleep(5)
 
-    #br.visit('https://rateyourmusic.com/admin/imaq/?image_id=5891747')
     br.click_link_by_partial_href('javascript:setStatus')
 
 
@@ -101,4 +117,4 @@ def add_album_to_rym(args, config_file):
 
     # Done
     br.click_link_by_partial_href('/release/')
-    print "Finished"
+    print("Finished")

@@ -1,6 +1,4 @@
-#!/usr/bin/env python2
-
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 b = 'bandcamp'
 
