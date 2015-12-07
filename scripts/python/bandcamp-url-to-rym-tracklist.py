@@ -2,11 +2,8 @@
 
 import sys, os, re, argparse, urllib, splinter, time
 import rym, config, credentials
-#from splinter import Browser
 from bs4 import BeautifulSoup
 
-#reload(sys)
-#sys.setdefaultencoding('utf-8')
 
 soup        = None
 cfg_file    = None
@@ -43,9 +40,10 @@ def parse_command_line_args():
     global soup, config_file, args, album_dir
 
 
-    parser = argparse.ArgumentParser(description='Get a RYM tracklist from Bandcamp')
+    parser = argparse.ArgumentParser(description='Add/Update RYM albums from a Bandcamp link')
 
     parser.add_argument('-u', '--url', required=True, help='Bandcamp URL')
+    parser.add_argument('--nudity', action='store_true')
 
     subparsers = parser.add_subparsers(dest=subparser_string)
 
@@ -59,24 +57,10 @@ def parse_command_line_args():
     update_subparser.add_argument('--update', nargs='+', type=str, choices=[info, cover])
 
     args = parser.parse_args()
-    #print(args.update)
-    #sys.exit(0)
-
-    #print(getattr(args, subparser_string))
-    #sys.exit(0)
 
     if not bandcamp_url(args.url):
         print("Not a Bandcamp url")
         parser.exit(1)
-
-    #print(cover in args.update)
-    #sys.exit(0)
-
-    """
-    if args.update_album and args.rym_album is None:
-        print("Provide album to be updated!")
-        parse.exit(1)
-    """
 
     req             = urllib.request.urlopen(args.url)
     content         = req.read()
@@ -187,7 +171,7 @@ def submit_info(br, title, tracklist, release):
     release_day_selector    = br.find_by_id('day')
     release_day_selector.select(day)
 
-    if int(year) < 2020:
+    if 2005 < int(year) < 2020:
         release_year_selector   = br.find_by_id('year')
         release_year_selector.select(year)
     
@@ -197,13 +181,10 @@ def submit_info(br, title, tracklist, release):
 
 def upload_cover(br, cover_art_file, source):
 
-    """
-    coverart_img_element = br.find_by_xpath("//img[@class='coverart_img']")
-    print(coverart_im_element)
-    sys.exit(0)
-    """
-
     br.attach_file('upload_file', cover_art_file)
+
+    if args.nudity:
+        br.find_by_id('content_nudity').click()
 
     br.fill('source', source)
     br.find_by_id('uploadbutton').click()
@@ -223,8 +204,6 @@ def add_album_to_rym(args, config_file):
         
         br.visit(args.rym_album)
         time.sleep(2)
-
-        #artist_page = br.find_by_xpath("//a[@itemprop='name']")
          
         if info in args.update:
 
@@ -244,8 +223,6 @@ def add_album_to_rym(args, config_file):
             
             br.visit(args.rym_album)
             time.sleep(2)
-
-        #artist_page.click()
 
     else:
 
@@ -286,8 +263,6 @@ def add_album_to_rym(args, config_file):
     # Done
     br.click_link_by_partial_href('/release/')
     print("Finished")
-
-
 
 
 parse_command_line_args()
