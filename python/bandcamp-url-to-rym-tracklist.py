@@ -4,11 +4,8 @@ import sys, os, re, argparse, urllib, splinter, time
 import rym, config, credentials
 from bs4 import BeautifulSoup
 
+import BandcampEntry, SpotifyEntry
 
-soup        = None
-cfg_file    = None
-args        = None
-album_dir   = None
 
 subparser_string    = 'subparser'
 add_artist          = 'add-artist'
@@ -17,32 +14,14 @@ update_album        = 'update-album'
 info                = 'info'
 cover               = 'cover'
 
-def create_if_needed(directory):
-    try:
-        os.makedirs(directory)
-    except OSError:
-        pass
-
-def bandcamp_url(url):
-    parsed_uri = urllib.parse.urlparse(url)
-    domain = parsed_uri.netloc
-
-    domain_components = domain.split('.')
-    if (len(domain_components) < 2):
-        return False
-
-    two_level_domain = "%s.%s" % (domain_components[-2], domain_components[-1])
-    return two_level_domain == "bandcamp.com"
-
 
 def parse_command_line_args():
     
-    global soup, config_file, args, album_dir
+    parser = argparse.ArgumentParser(description='Add/Update RYM albums from a Bandcamp/Spotify link')
 
-
-    parser = argparse.ArgumentParser(description='Add/Update RYM albums from a Bandcamp link')
-
-    parser.add_argument('-u', '--url', required=True, help='Bandcamp URL')
+    parser.add_argument('-u', '--url', help='Bandcamp URL')
+    parser.add_argument('-s', '--spotify-uri', help='Spotify URI')
+    
     parser.add_argument('--nudity', action='store_true')
 
     subparsers = parser.add_subparsers(dest=subparser_string)
@@ -58,83 +37,21 @@ def parse_command_line_args():
 
     args = parser.parse_args()
 
-    if not bandcamp_url(args.url):
-        print("Not a Bandcamp url")
-        parser.exit(1)
-
-    req             = urllib.request.urlopen(args.url)
-    content         = req.read()
-    soup            = BeautifulSoup(content, 'html.parser')
+    if args.url is not None:
+        album_entry = BandcampEntry.BandcampEntry(args.url)
     
-    album_dir       = 'data/' + os.path.basename(args.url)
-    create_if_needed(album_dir)
+    elif args.spotify_uri is not None:
+        album_entry = SpotifyEntry.SpotifyEntry(args.spotify_uri)
 
-    config_file     = album_dir + '/album_data.ini'
-
-
-def extract_title_and_artist(string):
-    m = re.match('(.*), by (.*)', string)
-
-    if not m:
-        raise Exception('Regex did not match')
-
-    title = m.group(1)
-    artist = m.group(2)
-
-    return (title, artist)
-
-def parse_tracklist():
-
-    title_and_artist = soup.find('meta', attrs={'name':'title'})['content']
-    
-    (title, artist) = extract_title_and_artist(title_and_artist)
-    
-    print("Album title:\t%s" % title)
-    print("Artist:\t\t%s" % artist)
-    print
-
-    tracknumber_cols = soup.findAll('td', attrs={'class':'track-number-col'})
-    title_cols       = soup.findAll('td', attrs={'class':'title-col'})
-
-    full_tracklist = ""
-
-    print("Tracklist:")
-    for (track_col, title_col) in zip(tracknumber_cols, title_cols):
-        track_id = track_col.div.string.replace(".","")
-
-        title_div = title_col.div
-        track_title = title_div.a.span.string
-
-        track_duration_span = title_div.find('span', attrs={'class':'time secondaryText'})
-        track_duration = track_duration_span.string.strip()
-    
-        tracklist_string = '%s|%s|%s' % (track_id, track_title, track_duration)
-        print(tracklist_string)
-        full_tracklist += tracklist_string + "\n"
-
-    release = soup.find('meta', attrs={'itemprop':'datePublished'})['content']
-    print("\nRelease date: %s" % release)
-
-    cover_art = soup.find('link', attrs={'rel':'image_src'})['href']
-    image_ext = os.path.splitext(cover_art)[1]
-    cover_art_file  = album_dir + '/cover_art' + image_ext
-    #cover_art_file  = cover_art_file.replace('%', "")
-    
-    urllib.request.urlretrieve(cover_art, cover_art_file)
-
-    config.write_config(config_file, title, artist, full_tracklist, 
-            release, os.path.abspath(cover_art_file))
+    else:
+        sys.exit(1)
 
 
-def parse_release_date(release):
-    year    = release[0:4]
-    month   = release[4:6]
-    day     = release[6:8]
-
-    return (year, month, day)
+    return (args, album_entry)
 
 
 def get_attribute(obj, string):
+    
     return getattr(obj, string)
 
 
@@ -150,7 +67,7 @@ def login(br):
     time.sleep(5)
 
 
-def submit_info(br, title, tracklist, release):
+def submit_info(br, title, tracklist, year, month, day):
     br.fill('title', title)
     
     br.find_by_id('format58').click()
@@ -161,10 +78,8 @@ def submit_info(br, title, tracklist, release):
     tracks_text_area.fill(tracklist) 
     br.find_by_id('goSimpleBtn').click()
 
-    br.fill('notes', args.url)
+    br.fill('notes', album_entry.source)
  
-    (year, month, day)      = parse_release_date(release)
-
     release_month_selector  = br.find_by_id('month')
     release_month_selector.select(month)
     
@@ -179,14 +94,15 @@ def submit_info(br, title, tracklist, release):
     br.find_by_id('submitbtn').click()
 
 
-def upload_cover(br, cover_art_file, source):
+def upload_cover(br, album_entry):
 
-    br.attach_file('upload_file', cover_art_file)
+    print(album_entry.cover_art_file)
+    br.attach_file('upload_file', album_entry.cover_art_file)
 
     if args.nudity:
         br.find_by_id('content_nudity').click()
 
-    br.fill('source', source)
+    br.fill('source', album_entry.source)
     br.find_by_id('uploadbutton').click()
     time.sleep(10)
 
@@ -194,8 +110,7 @@ def upload_cover(br, cover_art_file, source):
     br.click_link_by_partial_href('/release/')
 
 
-def add_album_to_rym(args, config_file):
-    (title, artist, tracklist, release, cover_art_file) = config.read_config(config_file)
+def add_album_to_rym(args, album_entry):
     
     br = splinter.Browser()
     login(br)
@@ -208,7 +123,8 @@ def add_album_to_rym(args, config_file):
         if info in args.update:
 
             br.find_by_text('Correct this entry').click()    
-            submit_info(br, title, tracklist, release)
+            submit_info(br, album_entry.title, album_entry.tracklist, 
+                    album_entry.year, album_entry.month, album_entry.day)
             time.sleep(2)
             
             br.visit(args.rym_album)
@@ -218,7 +134,7 @@ def add_album_to_rym(args, config_file):
             
             br.find_by_text('Upload cover art').click()
             
-            upload_cover(br, cover_art_file, args.url)
+            upload_cover(br, album_entry)
             time.sleep(2)
             
             br.visit(args.rym_album)
@@ -229,14 +145,14 @@ def add_album_to_rym(args, config_file):
         if get_attribute(args, subparser_string) == add_artist:
             br.visit('https://rateyourmusic.com/artist_add')
 
-            br.fill('lastname', artist)
-            br.fill('comments', args.url)
+            br.fill('lastname', album_entry.artist)
+            br.fill('comments', album_entry.source)
 
             br.find_by_id('submitbtn').click()
 
             time.sleep(3)
             
-            br.find_by_text(artist).click()
+            br.find_by_text(album_entry.artist).click()
         
         else:
             br.visit(args.rym_profile)
@@ -244,10 +160,11 @@ def add_album_to_rym(args, config_file):
         time.sleep(3)
 
         br.click_link_by_partial_href('/releases/ac?artist_id=')
-        submit_info(br, title, tracklist, release)
+        submit_info(br, album_entry.title, album_entry.full_tracklist, 
+                album_entry.year, album_entry.month, album_entry.day)
         
         br.click_link_by_partial_href('/images/upload?type=l&assoc_id=')
-        upload_cover(br, cover_art_file, args.url)
+        upload_cover(br, album_entry)
 
     # Vote for genre
     time.sleep(3)
@@ -265,7 +182,5 @@ def add_album_to_rym(args, config_file):
     print("Finished")
 
 
-parse_command_line_args()
-parse_tracklist()
-
-add_album_to_rym(args, config_file)
+(args, album_entry) = parse_command_line_args()
+add_album_to_rym(args, album_entry)

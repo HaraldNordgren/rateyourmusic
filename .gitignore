@@ -3,6 +3,8 @@
 *.pyc
 
 **/data/
+**/cover_art/
+
 **/cookies.txt
 **/*debuglog.txt
 
