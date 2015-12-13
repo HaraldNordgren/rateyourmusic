@@ -86,11 +86,13 @@ def submit_info(br, title, tracklist, year, month, day):
     release_day_selector    = br.find_by_id('day')
     release_day_selector.select(day)
 
-    if 2005 < int(year) < 2020:
+    if 2010 < int(year) < 2020:
         release_year_selector   = br.find_by_id('year')
         release_year_selector.select(year)
     
     br.find_by_id('previewbtn').click()
+    time.sleep(2)
+    
     br.find_by_id('submitbtn').click()
 
 
@@ -182,5 +184,6 @@ def add_album_to_rym(args, album_entry):
     print("Finished")
 
 
-(args, album_entry) = parse_command_line_args()
-add_album_to_rym(args, album_entry)
+if __name__ == "__main__":
+    (args, album_entry) = parse_command_line_args()
+    add_album_to_rym(args, album_entry)
