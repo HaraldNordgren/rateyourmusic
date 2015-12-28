@@ -7,5 +7,6 @@
 
 **/cookies.txt
 **/*debuglog.txt
+**/chromedriver.log
 
 **/credentials.py

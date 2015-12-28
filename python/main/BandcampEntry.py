@@ -58,7 +58,7 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
         soup            = BeautifulSoup(content, 'html.parser')
 
         tags = soup.findAll('a', attrs={'class':'tag'})
-        self.parse_genres(tag.getText() for tag in tags)
+        self.parse_genres(tag.getText().lower() for tag in tags)
 
         title_and_artist = soup.find('meta', attrs={'name':'title'})['content']        
         self.extract_title_and_artist(title_and_artist)

@@ -2,4 +2,4 @@ genre_map = {
         'eccojam': 'vaporwave'
 }
 
-genre_list = ['chillwave', 'witch house']
+genre_list = ['chillwave', 'witch house', 'synthwave']

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
 import sys, os, re, argparse, urllib, splinter, time, datetime
-import credentials
-from bs4 import BeautifulSoup
+import BandcampEntry, SpotifyEntry, credentials
 
-import BandcampEntry, SpotifyEntry
+from bs4 import BeautifulSoup
 
 
 subparser_string    = 'subparser'
@@ -174,7 +173,7 @@ def vote_for_genres(br, album_entry):
 
 def add_album_to_rym(args, album_entry):
     
-    br = splinter.Browser()
+    br = splinter.Browser('chrome')
     login(br)
 
     if get_attribute(args, subparser_string) == update_album:
