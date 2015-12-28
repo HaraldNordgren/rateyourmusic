@@ -12,6 +12,7 @@ class AlbumEntry:
 
         self.primary_issue  = None
         self.genres         = set()
+        self.lossless       = False
 
     def retrieve_cover_art(self, cover_art):
 

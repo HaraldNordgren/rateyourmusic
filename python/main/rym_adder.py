@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, re, argparse, urllib, splinter, time, datetime
+import sys, os, re, argparse, urllib, splinter, time, datetime, re
 import BandcampEntry, SpotifyEntry, credentials
 
 from bs4 import BeautifulSoup
@@ -84,11 +84,11 @@ def login(br):
 
 def submit_info(br, album_entry):
 
-    title       = album_entry.title
-    tracklist   = album_entry.full_tracklist
-    year        = album_entry.year
-    month       = album_entry.month
-    day         = album_entry.day
+    #title       = album_entry.title
+    #tracklist   = album_entry.full_tracklist
+    #year        = album_entry.year
+    #month       = album_entry.month
+    #day         = album_entry.day
 
     if album_entry.primary_issue:
 
@@ -97,27 +97,30 @@ def submit_info(br, album_entry):
 
         br.find_by_id('filed_under_same_as_parent_yes').click()
 
-    br.fill('title', title)
-    
-    br.find_by_id('format58').click()
+    # Set release type to EP only if title ends with " EP"
+    if bool(re.search(' EP$', album_entry.title)):
+        br.find_by_id('categorye').click()
+
+    br.fill('title', album_entry.title)
+
+    if album_entry.lossless:
+        br.find_by_id('format59').click()
+    else:
+        br.find_by_id('format58').click()
 
     br.find_by_id('goAdvancedBtn').click()
-    tracks_div = br.find_by_id('tracks_adv')
-    tracks_text_area = tracks_div.find_by_id('track_advanced')
-    tracks_text_area.fill(tracklist) 
+    tracks_text_area = br.find_by_id('tracks_adv').find_by_id('track_advanced')
+    tracks_text_area.fill(album_entry.full_tracklist) 
     br.find_by_id('goSimpleBtn').click()
 
     br.fill('notes', album_entry.source)
  
-    release_month_selector  = br.find_by_id('month')
-    release_month_selector.select(month)
-    
-    release_day_selector    = br.find_by_id('day')
-    release_day_selector.select(day)
+    # Only add if release year is reasonable
+    if 2010 <= int(album_entry.year) <= datetime.date.today().year:
 
-    if 2010 <= int(year) <= datetime.date.today().year:
-        release_year_selector   = br.find_by_id('year')
-        release_year_selector.select(year)
+        br.find_by_id('year').select(album_entry.year)
+        br.find_by_id('month').select(album_entry.month)
+        br.find_by_id('day').select(album_entry.day)
     
     br.find_by_id('previewbtn').click()
     time.sleep(2)

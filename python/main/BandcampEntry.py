@@ -51,11 +51,14 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
         if not bandcamp_url(url):
             print('"%s" is not a Bandcamp url' % url)
             sys.exit(1)
-
+        
         self.source     = url
         
         content         = urllib.request.urlopen(url).read()
         soup            = BeautifulSoup(content, 'html.parser')
+
+        if soup.find('li', attrs={'class':'buyItem'}) is not None:
+            self.lossless = True
 
         tags = soup.findAll('a', attrs={'class':'tag'})
         self.parse_genres(tag.getText().lower() for tag in tags)
