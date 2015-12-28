@@ -40,8 +40,10 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
 
     def __init__(self, url):
 
+        super().__init__()
+
         if not bandcamp_url(url):
-            print("Not a Bandcamp url")
+            print('"%s" is not a Bandcamp url' % url)
             sys.exit(1)
 
         req                 = urllib.request.urlopen(url)
@@ -79,7 +81,7 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
         release = soup.find('meta', attrs={'itemprop':'datePublished'})['content']
         
         (self.year, self.month, self.day) = parse_release_date(release)
-        print("\nRelease date: %s-%s-%s" % (self.year, self.month, self.day))
+        print("\nRelease date:\t%s-%s-%s" % (self.year, self.month, self.day))
        
         cover_art           = soup.find('link', attrs={'rel':'image_src'})['href']
         self.retrieve_cover_art(cover_art)
