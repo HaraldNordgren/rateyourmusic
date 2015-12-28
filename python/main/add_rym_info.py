@@ -50,7 +50,8 @@ def parse_command_line_args():
     update_subparser.add_argument('-a', '--rym-album', required=True)
     
     # Options to update info and/or cover art
-    update_subparser.add_argument('--update', nargs='+', type=str, choices=[info, cover])
+    update_subparser.add_argument('--update', nargs='*', type=str,
+            choices=[info, cover], default=[])
 
 
     args = parser.parse_args()
@@ -154,6 +155,22 @@ def add_artist_to_rym(album_entry):
     # Go to newly created artist page
     br.find_by_text(album_entry.artist).click()
 
+def vote_for_genres(br, album_entry):
+
+    # Go to genre voting page
+    br.click_link_by_partial_href('/rgenre/set?')
+
+    for genre in album_entry.genres:
+
+        prigen_text_area = br.find_by_xpath("//input[@id='prigen']")
+        prigen_text_area.fill(genre)
+
+        prigen_vote_button = br.find_by_xpath("//input[@value='+ propose']").first
+        prigen_vote_button.click()
+
+    # Go back to release
+    br.click_link_by_partial_href('/release/')
+
 
 def add_album_to_rym(args, album_entry):
     
@@ -215,19 +232,9 @@ def add_album_to_rym(args, album_entry):
         br.click_link_by_partial_href('/images/upload?type=l&assoc_id=')
         upload_cover(br, album_entry)
 
-    # Vote for genre
     time.sleep(3)
-
-    br.click_link_by_partial_href('/rgenre/set?')
-
-    prigen_text_area = br.find_by_xpath("//input[@id='prigen']")
-    prigen_text_area.fill('vaporwave')
-
-    prigen_vote_button = br.find_by_xpath("//input[@value='+ propose']").first
-    prigen_vote_button.click()
-
-    # Done
-    br.click_link_by_partial_href('/release/')
+    vote_for_genres(br, album_entry)
+    
     print("Finished")
 
 
