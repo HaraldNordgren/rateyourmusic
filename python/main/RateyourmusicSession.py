@@ -45,9 +45,10 @@ class RateyourmusicSession:
         else:
             self.br.find_by_id('format58').click()
 
-        if album_entry.has_bonus_tracks():
+        if album_entry.bonus_tracks:
             self.br.check('attrib62')
 
+        # Enter tracklist
         self.br.find_by_id('goAdvancedBtn').click()
         tracks_text_area = self.br.find_by_id('tracks_adv').\
                 find_by_id('track_advanced')
@@ -56,8 +57,8 @@ class RateyourmusicSession:
 
         self.br.fill('notes', album_entry.source)
      
-        # Only add if release year is reasonable
-        if 2010 <= int(album_entry.year) <= datetime.date.today().year:
+        # Bandcamp launched in 2008
+        if 2008 <= int(album_entry.year) <= datetime.date.today().year:
 
             self.br.find_by_id('year').select(album_entry.year)
             self.br.find_by_id('month').select(album_entry.month)
@@ -79,7 +80,7 @@ class RateyourmusicSession:
         self.br.find_by_id('uploadbutton').click()
         time.sleep(10)
 
-        # Approve image
+        # Approve it
         self.br.click_link_by_partial_href('javascript:setStatus')
         self.br.click_link_by_partial_href('/release/')
 

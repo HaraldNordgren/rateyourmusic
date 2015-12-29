@@ -36,7 +36,11 @@ class SpotifyEntry(AlbumEntry.AlbumEntry):
             (dur_m, dur_s_final) = divmod(dur_s, 60)
             dur_string = "%d:%d" % (int(dur_m), round(dur_s_final))
 
-            self.full_tracklist += "%s|%s|%s\n" % (t['track_number'], t['name'], dur_string)
+            self.full_tracklist += "%s|%s|%s\n" % \
+                    (t['track_number'], t['name'], dur_string)
+        
+        self.correct_capitalization()
+        self.detect_bonus_tracks()
         
         cover_art           = album['images'][0]['url']
         self.retrieve_cover_art(cover_art)

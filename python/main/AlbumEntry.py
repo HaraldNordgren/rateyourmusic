@@ -7,23 +7,11 @@ class AlbumEntry:
         self.primary_issue  = None
         self.genres         = set()
         self.lossless       = False
+        self.bonus_tracks   = False
 
     def retrieve_cover_art(self, cover_art):
 
         self.cover_art_file = images.download_cover_art(cover_art, self)
-
-        """
-        folder = 'cover_art'
-        create_if_needed(folder)
-
-        tmp_file = folder + '/' + self.title.replace(' ', '_')
-        urllib.request.urlretrieve(cover_art, tmp_file)
-
-        image_ext = imghdr.what(tmp_file)
-
-        self.cover_art_file = os.path.abspath(tmp_file + "." + image_ext)
-        os.rename(tmp_file, self.cover_art_file)
-        """
     
     def print_info(self):
         
@@ -53,7 +41,15 @@ class AlbumEntry:
             self.title          = re.sub(pattern, repl, self.title)
             self.full_tracklist = re.sub(pattern, repl, self.full_tracklist)
 
+    """
     def has_bonus_tracks(self):
 
         regex = '\((.* )?bonus( .*)?\)\|'
         return bool(re.search(regex, self.full_tracklist, re.IGNORECASE))
+    """
+
+    def detect_bonus_tracks(self):
+
+        regex = '\((.* )?bonus( .*)?\)\|'
+        self.bonus_tracks = \
+                bool(re.search(regex, self.full_tracklist, re.IGNORECASE))

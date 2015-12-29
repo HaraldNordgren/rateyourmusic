@@ -88,6 +88,7 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
             self.full_tracklist += tracklist_string + "\n"
 
         self.correct_capitalization()
+        self.detect_bonus_tracks()
 
         release = soup.\
                 find('meta', attrs={'itemprop':'datePublished'})['content']
