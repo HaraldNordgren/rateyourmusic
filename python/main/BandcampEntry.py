@@ -1,4 +1,4 @@
-import sys, os, re, urllib, string
+import sys, os, re, urllib
 import AlbumEntry, genres
 
 from bs4 import BeautifulSoup
@@ -86,9 +86,6 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
             self.full_tracklist += tracklist_string + "\n"
 
         self.correct_capitalization()
-
-        # TODO
-        # Regex replace "A", "In", etc.
 
         release = soup.find('meta', attrs={'itemprop':'datePublished'})['content']
         self.parse_release_date(release)
