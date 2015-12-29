@@ -1,10 +1,5 @@
-import os, urllib, imghdr, re
-
-def create_if_needed(directory):
-
-    if not os.path.isdir(directory):
-        os.makedirs(directory)
-
+import re
+import images
 
 class AlbumEntry:
 
@@ -16,6 +11,9 @@ class AlbumEntry:
 
     def retrieve_cover_art(self, cover_art):
 
+        self.cover_art_file = images.download_cover_art(cover_art, self)
+
+        """
         folder = 'cover_art'
         create_if_needed(folder)
 
@@ -26,6 +24,7 @@ class AlbumEntry:
 
         self.cover_art_file = os.path.abspath(tmp_file + "." + image_ext)
         os.rename(tmp_file, self.cover_art_file)
+        """
     
     def print_info(self):
         
@@ -54,3 +53,9 @@ class AlbumEntry:
 
             self.title          = re.sub(pattern, repl, self.title)
             self.full_tracklist = re.sub(pattern, repl, self.full_tracklist)
+
+    def detect_bonus_tracks(self):
+
+        regex = '\((.* )?bonus( .*)?\)$'
+        self.bonus_tracks = \
+                bool(re.search(regex, self.full_tracklist, re.IGNORECASE))
