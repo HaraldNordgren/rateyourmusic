@@ -1,5 +1,4 @@
-import re
-import images
+import re, images
 
 class AlbumEntry:
 
@@ -54,8 +53,7 @@ class AlbumEntry:
             self.title          = re.sub(pattern, repl, self.title)
             self.full_tracklist = re.sub(pattern, repl, self.full_tracklist)
 
-    def detect_bonus_tracks(self):
+    def has_bonus_tracks(self):
 
-        regex = '\((.* )?bonus( .*)?\)$'
-        self.bonus_tracks = \
-                bool(re.search(regex, self.full_tracklist, re.IGNORECASE))
+        regex = '\((.* )?bonus( .*)?\)\|'
+        return bool(re.search(regex, self.full_tracklist, re.IGNORECASE))

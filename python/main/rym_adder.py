@@ -24,15 +24,18 @@ def parse_command_line_args():
     subparsers = parser.add_subparsers(dest=subparser_string)
 
     # Add artist and then album
-    add_artist_subparser = subparsers.add_parser(add_artist, help='Add new artist to RYM')
+    add_artist_subparser = subparsers.add_parser(add_artist,
+            help='Add new artist to RYM')
 
     # Add album to given RYM profile
-    add_album_subparser = subparsers.add_parser(add_album, help='Add album to RYM aritst page')
+    add_album_subparser = subparsers.add_parser(add_album,
+            help='Add album to RYM aritst page')
     add_album_subparser.add_argument('-r', '--rym-profile',
             help='RateYourMusic artist profile URL')
 
     # Add an issue to given RYM primary issue
-    add_issue_subparser = subparsers.add_parser(add_issue, help='Add new issue to RYM album')
+    add_issue_subparser = subparsers.add_parser(add_issue,
+            help='Add new issue to RYM album')
     add_issue_subparser.add_argument('-p', '--primary-url', required=True,
             help='RateYourMusic primary issue URL')
     
@@ -54,7 +57,6 @@ if __name__ == "__main__":
     
     if args.url is not None:
         album_entry = BandcampEntry.BandcampEntry(args.url)
-
     else:
         album_entry = SpotifyEntry.SpotifyEntry(args.spotify_uri)
 

@@ -63,10 +63,11 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
         tags = soup.findAll('a', attrs={'class':'tag'})
         self.parse_genres(tag.getText().lower() for tag in tags)
 
-        title_and_artist = soup.find('meta', attrs={'name':'title'})['content']        
+        title_and_artist = soup.find('meta', attrs={'name':'title'})['content']
         self.extract_title_and_artist(title_and_artist)
 
-        tracknumber_cols = soup.findAll('td', attrs={'class':'track-number-col'})
+        tracknumber_cols = soup.\
+                findAll('td', attrs={'class':'track-number-col'})
         title_cols       = soup.findAll('td', attrs={'class':'title-col'})
 
         self.full_tracklist = ""
@@ -77,17 +78,19 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
 
             title_div           = title_col.div
             track_title         = title_div.a.span.string
-            #track_title         = string.capwords(title_div.a.span.string)
 
-            track_duration_span = title_div.find('span', attrs={'class':'time secondaryText'})
+            track_duration_span = title_div.\
+                    find('span', attrs={'class':'time secondaryText'})
             track_duration      = track_duration_span.string.strip()
         
-            tracklist_string    = '%s|%s|%s' % (track_id, track_title, track_duration)
+            tracklist_string    = '%s|%s|%s' % \
+                    (track_id, track_title, track_duration)
             self.full_tracklist += tracklist_string + "\n"
 
         self.correct_capitalization()
 
-        release = soup.find('meta', attrs={'itemprop':'datePublished'})['content']
+        release = soup.\
+                find('meta', attrs={'itemprop':'datePublished'})['content']
         self.parse_release_date(release)
         
         cover_art = soup.find('link', attrs={'rel':'image_src'})['href']

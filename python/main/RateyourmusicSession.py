@@ -29,7 +29,8 @@ class RateyourmusicSession:
         if album_entry.primary_issue:
 
             self.br.find_by_id('parent_id').select('other')
-            self.br.find_by_id('parent_shortcut').fill(album_entry.primary_issue)
+            self.br.find_by_id('parent_shortcut').\
+                    fill(album_entry.primary_issue)
 
             self.br.find_by_id('filed_under_same_as_parent_yes').click()
 
@@ -44,8 +45,12 @@ class RateyourmusicSession:
         else:
             self.br.find_by_id('format58').click()
 
+        if album_entry.has_bonus_tracks():
+            self.br.check('attrib62')
+
         self.br.find_by_id('goAdvancedBtn').click()
-        tracks_text_area = self.br.find_by_id('tracks_adv').find_by_id('track_advanced')
+        tracks_text_area = self.br.find_by_id('tracks_adv').\
+                find_by_id('track_advanced')
         tracks_text_area.fill(album_entry.full_tracklist) 
         self.br.find_by_id('goSimpleBtn').click()
 
@@ -60,7 +65,7 @@ class RateyourmusicSession:
         
         self.br.find_by_id('previewbtn').click()
         time.sleep(2)
-        
+       
         self.br.find_by_id('submitbtn').click()
 
     def upload_cover(self, args, album_entry):
@@ -103,7 +108,8 @@ class RateyourmusicSession:
             self.br.find_by_xpath("//input[@value='+ propose']").first.click()
 
         # Go back to release
-        self.br.click_link_by_partial_href('/release/')
+        self.br.back()
+        self.br.reload()
 
     def update_rym_album(self, args, album_entry):
             
@@ -126,7 +132,8 @@ class RateyourmusicSession:
         rym_cover = Image.open(rym_cover_path)
         new_cover = Image.open(album_entry.cover_art_file)
 
-        if new_cover.size[0] > rym_cover.size[0]:
+        if (new_cover.size[0] > rym_cover.size[0] and 
+                new_cover.size[1] > rym_cover.size[1]):
             
             self.br.visit(args.rym_album)
             time.sleep(3)
@@ -157,9 +164,10 @@ class RateyourmusicSession:
             self.br.visit(args.primary_url)
             time.sleep(2)
 
-            album_title_div = self.br.find_by_xpath("//div[@class='album_title']")
-            primary_shortcut_area = \
-                    album_title_div.find_by_xpath(".//input[@class='album_shortcut']")
+            album_title_div = \
+                    self.br.find_by_xpath("//div[@class='album_title']")
+            primary_shortcut_area = album_title_div.\
+                    find_by_xpath(".//input[@class='album_shortcut']")
             
             album_entry.primary_issue = primary_shortcut_area['value']
 
