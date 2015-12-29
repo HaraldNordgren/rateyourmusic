@@ -1,4 +1,4 @@
-import sys, os, re, urllib
+import sys, os, re, urllib, string
 import AlbumEntry, genres
 
 from bs4 import BeautifulSoup
@@ -24,9 +24,9 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
         self.month   = release[4:6]
         self.day     = release[6:8]
 
-    def extract_title_and_artist(self, string):
+    def extract_title_and_artist(self, title_artist_string):
 
-        m = re.match('(.*), by (.*)', string)
+        m = re.match('(.*), by (.*)', title_artist_string)
 
         if not m:
             raise Exception('Title-artist regex did not match')
@@ -77,12 +77,18 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
 
             title_div           = title_col.div
             track_title         = title_div.a.span.string
+            #track_title         = string.capwords(title_div.a.span.string)
 
             track_duration_span = title_div.find('span', attrs={'class':'time secondaryText'})
             track_duration      = track_duration_span.string.strip()
         
             tracklist_string    = '%s|%s|%s' % (track_id, track_title, track_duration)
             self.full_tracklist += tracklist_string + "\n"
+
+        self.correct_capitalization()
+
+        # TODO
+        # Regex replace "A", "In", etc.
 
         release = soup.find('meta', attrs={'itemprop':'datePublished'})['content']
         self.parse_release_date(release)

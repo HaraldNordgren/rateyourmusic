@@ -1,4 +1,4 @@
-import os, urllib, imghdr
+import os, urllib, imghdr, re
 
 def create_if_needed(directory):
 
@@ -42,3 +42,15 @@ class AlbumEntry:
             for g in self.genres:
                 print(g)
 
+    def correct_capitalization(self):
+
+        words = [ 'A', 'An', 'And', 'At', 'But', 'By', 'For',
+                  'In', 'Nor', 'On', 'Or', 'The', 'To' ]
+
+        for word in words:
+
+            pattern = ' ' + word + '(?= )'
+            repl    = ' ' + word.lower()
+
+            self.title          = re.sub(pattern, repl, self.title)
+            self.full_tracklist = re.sub(pattern, repl, self.full_tracklist)

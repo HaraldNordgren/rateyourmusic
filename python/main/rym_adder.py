@@ -66,9 +66,7 @@ def parse_command_line_args():
 
 
 def get_attribute(obj, string):
-    
     return getattr(obj, string)
-
 
 def login(br):
     
@@ -81,14 +79,7 @@ def login(br):
     
     time.sleep(5)
 
-
 def submit_info(br, album_entry):
-
-    #title       = album_entry.title
-    #tracklist   = album_entry.full_tracklist
-    #year        = album_entry.year
-    #month       = album_entry.month
-    #day         = album_entry.day
 
     if album_entry.primary_issue:
 
@@ -176,7 +167,7 @@ def vote_for_genres(br, album_entry):
 
 def add_album_to_rym(args, album_entry):
     
-    br = splinter.Browser('chrome')
+    br = splinter.Browser()
     login(br)
 
     if get_attribute(args, subparser_string) == update_album:
@@ -237,7 +228,7 @@ def add_album_to_rym(args, album_entry):
     time.sleep(3)
     vote_for_genres(br, album_entry)
     
-    print("Finished")
+    print("\nFinished")
 
 
 if __name__ == "__main__":
