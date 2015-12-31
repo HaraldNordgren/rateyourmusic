@@ -46,7 +46,7 @@ def parse_command_line_args():
     
     # Options to update info and/or cover art
     update_subparser.add_argument('--update', nargs='*', type=str,
-            choices=[info], default=[])
+            choices=[info, keep_cover], default=[])
 
     return parser.parse_args()
 

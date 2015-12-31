@@ -7,3 +7,4 @@ update_album        = 'update-album'
 
 info                = 'info'
 cover               = 'cover'
+keep_cover          = 'keep-cover'

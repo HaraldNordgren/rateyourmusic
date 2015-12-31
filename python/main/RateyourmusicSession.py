@@ -123,29 +123,31 @@ class RateyourmusicSession:
             self.submit_info(album_entry)
             time.sleep(2)
 
-        self.br.visit("%s/buy" % args.rym_album)
-        time.sleep(1)
-        
-        rym_cover_url = self.br.find_by_text('View cover art')['href']
-        rym_cover_path = images.download_cover_art(rym_cover_url,
-                album_entry, rateyourmusic_original=True)
+        if keep_cover not in args.update:
 
-        rym_cover = Image.open(rym_cover_path)
-        new_cover = Image.open(album_entry.cover_art_file)
-
-        if (new_cover.size[0] > rym_cover.size[0] and 
-                new_cover.size[1] > rym_cover.size[1]):
+            self.br.visit("%s/buy" % args.rym_album)
+            time.sleep(1)
             
+            rym_cover_url = self.br.find_by_text('View cover art')['href']
+            rym_cover_path = images.download_cover_art(rym_cover_url,
+                    album_entry, rateyourmusic_original=True)
+
+            rym_cover = Image.open(rym_cover_path)
+            new_cover = Image.open(album_entry.cover_art_file)
+
+            if (new_cover.size[0] > rym_cover.size[0] and 
+                    new_cover.size[1] > rym_cover.size[1]):
+                
+                self.br.visit(args.rym_album)
+                time.sleep(3)
+                
+                self.br.find_by_text('Upload cover art').click()
+                
+                self.upload_cover(args, album_entry)
+                time.sleep(2)
+                
             self.br.visit(args.rym_album)
             time.sleep(3)
-            
-            self.br.find_by_text('Upload cover art').click()
-            
-            self.upload_cover(args, album_entry)
-            time.sleep(2)
-            
-        self.br.visit(args.rym_album)
-        time.sleep(3)
 
     def add_album_to_rym(self, args, album_entry):
 

@@ -54,7 +54,7 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
             first_component = match.group(1)
             second_component = match.group(2)
 
-            print(first_component + "::" + second_component) 
+            print("location:\t" + first_component + ", " + second_component) 
 
     def __init__(self, url):
 
@@ -90,8 +90,6 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
             if secondary_text:
                 self.extract_location(secondary_text)
 
-
-        sys.exit(0)
 
         tracknumber_cols = soup.\
                 findAll('td', attrs={'class':'track-number-col'})
