@@ -1,0 +1,20 @@
+US and Canada [City, State]:
+Athens, Georgia
+Portland, Oregon
+Massachusetts
+Princeton
+Johnstown, Pennsylvania
+New York, New York
+San Francisco, California
+San Diego, California
+Illinois
+
+Rest of the world [City, country]:
+Osaka, Japan
+Naha, Japan
+Peru
+London, UK
+Berlin, Germany
+京都府, Japan
+北海道, Japan
+Seoul, South Korea

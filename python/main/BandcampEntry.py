@@ -2,6 +2,7 @@ import sys, os, re, urllib
 import AlbumEntry, genres
 
 from bs4 import BeautifulSoup
+from states import US_states
 
 
 def bandcamp_url(url):
@@ -44,6 +45,17 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
             elif tag in genres.genre_map:
                 self.genres.add(genres.genre_map[tag])
 
+    def extract_location(self, secondary_text):
+
+        match = re.match('(.*), (.*)', secondary_text)
+
+        if match:
+
+            first_component = match.group(1)
+            second_component = match.group(2)
+
+            print(first_component + "::" + second_component) 
+
     def __init__(self, url):
 
         super().__init__()
@@ -65,6 +77,21 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
 
         title_and_artist = soup.find('meta', attrs={'name':'title'})['content']
         self.extract_title_and_artist(title_and_artist)
+
+        band_name_location = soup.find('p', attrs={'id': 'band-name-location'})
+        band_name_location_title = \
+                band_name_location.find('span', attrs={'class': 'title'})
+
+        if band_name_location_title.getText() == self.artist:
+            
+            secondary_text = band_name_location.find('span',
+                    attrs={'class': 'location secondaryText'}).getText()
+            
+            if secondary_text:
+                self.extract_location(secondary_text)
+
+
+        sys.exit(0)
 
         tracknumber_cols = soup.\
                 findAll('td', attrs={'class':'track-number-col'})
