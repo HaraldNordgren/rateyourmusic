@@ -1,7 +1,7 @@
 import splinter, time, sys, datetime, re
 import AlbumEntry, credentials, images
 
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 from attribute_strings import *
 from PIL import Image
 
