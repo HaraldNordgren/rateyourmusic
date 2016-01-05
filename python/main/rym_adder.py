@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, re, argparse, urllib, splinter, time, datetime, re
+import sys, os, re, argparse, urllib, splinter, time, datetime
 import BandcampEntry, SpotifyEntry, credentials
 
 from bs4 import BeautifulSoup
