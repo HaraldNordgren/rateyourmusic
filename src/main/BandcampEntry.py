@@ -65,6 +65,7 @@ class BandcampEntry(AlbumEntry.AlbumEntry):
             sys.exit(1)
         
         self.source     = url
+        self.sitename   = "Bandcamp website"
         
         content         = urllib.request.urlopen(url).read()
         soup            = BeautifulSoup(content, 'html.parser')

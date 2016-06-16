@@ -14,9 +14,8 @@ class SpotifyEntry(AlbumEntry.AlbumEntry):
     def __init__(self, uri):
         
         super().__init__()
-
-        # TODO: Test if Spotify URI
-        # Maybe also URL and decide dynamically what to do
+        
+        self.sitename   = "Spotify API"
         
         sp = spotipy.Spotify()
         album = sp.album(uri)

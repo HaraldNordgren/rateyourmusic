@@ -14,6 +14,8 @@ class AlbumEntry:
         self.cover_art_file = images.download_cover_art(cover_art, self)
     
     def print_info(self):
+
+        print("\nGETTING ALBUM DATA FROM %s:\n" % self.sitename.upper())
         
         print("Album title:\t%s" % self.title)
         print("Artist:\t\t%s" % self.artist)
