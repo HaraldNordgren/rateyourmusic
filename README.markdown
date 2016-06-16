@@ -10,3 +10,7 @@ Run the program with `python3 src/main/rym_adder.py`. Either a Bandcamp URL or S
 RYM options are entered without dashes as `add-artist` `add-album` `add-issue` `update-album`, and some of them come with their own sub-options like an URL to an artist or album page.
 
 Get help for the RYM options like this: ` python3 python/main/rym_adder.py add-issue -h`
+
+# Issues
+
+You may need to symlink `ln -s /usr/lib/x86_64-linux-gnu/libnss3.so /usr/lib` to get Chromedriver to start

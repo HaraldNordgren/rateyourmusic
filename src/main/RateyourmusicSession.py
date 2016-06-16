@@ -20,7 +20,7 @@ class RateyourmusicSession:
 
     def __init__(self):
 
-        self.br = splinter.Browser()
+        self.br = splinter.Browser('chrome')
         self.login()
 
     def submit_info(self, album_entry):
