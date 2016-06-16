@@ -1,0 +1,8 @@
+beautifulsoup4==4.4.1
+bs4==0.0.1
+#credentials==1.1
+Pillow==2.9.0
+requests==2.10.0
+selenium==2.53.5
+splinter==0.7.3
+spotipy==2.3.8
