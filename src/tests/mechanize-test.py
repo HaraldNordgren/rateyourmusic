@@ -25,13 +25,13 @@ br.open('https://rateyourmusic.com/account/login')
 br.select_form(nr=1)
 #print br.form
 
-br.form['username'] = "holograms"
-br.form['password'] = "Xds<2718"
+br.form['username'] = "username"
+br.form['password'] = "password"
 
 #br.open('https://www.reddit.com/')
 #br.select_form(nr=1)
-#br.form['user'] = "mellowmymints"
-#br.form['passwd'] = "Xds<2718"
+#br.form['user'] = "username"
+#br.form['passwd'] = "password"
 
 #print br.form
 
@@ -64,11 +64,8 @@ br.open("http://httpbin.org/forms/post")
 
 br.select_form(nr=0)
 
-br.form['custname'] = "Η Δύναμη 1996-2096"
-br.form['comments'] = "https://theforcefuckedyourbitch.bandcamp.com/album/ch-i-m-ep"
-
-#br.form['lastname'] = "Η Δύναμη 1996-2096"
-#br.form['comments'] = "https://theforcefuckedyourbitch.bandcamp.com/album/ch-i-m-ep"
+br.form['custname'] = "Custom name"
+br.form['comments'] = "Some source"
 
 response = br.submit()
 
